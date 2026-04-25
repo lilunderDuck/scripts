@@ -1,0 +1,8 @@
+[
+  {
+    "type": "enum",
+    "name": "hello",
+    "members": ["something"]
+  },
+  1
+]

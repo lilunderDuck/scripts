@@ -6,5 +6,8 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "fastest-validator": "^1.19.1"
   }
 }
