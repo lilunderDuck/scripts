@@ -8,7 +8,7 @@
     "typescript": "^5"
   },
   "scripts": {
-    "build-all": "bun run build.ts"
+    "build": "bun run build.ts"
   },
   "dependencies": {
     "fastest-validator": "^1.19.1"

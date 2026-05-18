@@ -1,7 +1,8 @@
 import { exec } from "child_process"
 
 const moduleList = [
-  "const_config"
+  "const_config",
+  "mangle"
 ]
 
 for (const moduleName of moduleList) {
