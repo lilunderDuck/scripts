@@ -1,4 +1,4 @@
-import { panic, panicThenShowFormatedObject } from "./logging"
+import { panic, panicThenShowFormatedObject } from "../../logging"
 
 
 export function isPlainObject(val: any) {

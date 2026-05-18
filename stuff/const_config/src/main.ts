@@ -1,5 +1,5 @@
 import { mustNotBeEmptyObject, requiresTheseProps } from "./validate"
-import { warnLog } from "./logging"
+import { warnLog } from "../../logging"
 import { addToMapping, appendContent, readConfigFile, saveTypeDef } from "./utils"
 
 export type EnumOption = {

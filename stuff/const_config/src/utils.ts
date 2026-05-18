@@ -1,4 +1,4 @@
-import type { ConstConfigFile, ValidEnum, ValidEnumValue } from "./consts_config"
+import type { ConstConfigFile, ValidEnum, ValidEnumValue } from "./main"
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 
 // Don't ask me, but most of the funcitons here are all have side-effects
