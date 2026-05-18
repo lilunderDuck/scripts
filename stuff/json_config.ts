@@ -3,15 +3,20 @@ import { panic } from "./logging"
 import path from "node:path"
 
 export function mustReadJsonConfig<T extends any>(jsonConfigName: string): T {
-  const jsonConfigLocation = process.argv[1]
+  const [_processName, _scriptPath, jsonConfigLocation] = process.argv
+
+  const cwd = process.cwd();
+
   try {
-    if (jsonConfigLocation && !jsonConfigLocation.includes(jsonConfigName)) {
-      panic(`Your config file must be named: ${jsonConfigName}, currently your config file name is "${path.basename(jsonConfigLocation!)}" in ${jsonConfigLocation}`)
+    if (jsonConfigLocation) {
+      if (!jsonConfigLocation.includes(jsonConfigName)) {
+        panic(`Your config file must be named: ${jsonConfigName}, currently your config file name is "${path.basename(jsonConfigLocation!)}" in ${jsonConfigLocation}`)
+      }
     }
 
     return JSON.parse(
       readFileSync(
-        jsonConfigLocation ? jsonConfigLocation : jsonConfigName, 
+        jsonConfigLocation ? jsonConfigLocation : `${cwd}/${jsonConfigName}`, 
         { encoding: "utf-8" }
       )
     )

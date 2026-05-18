@@ -1,3 +1,4 @@
+// @bun
 // stuff/logging.ts
 var RESET = "\x1B[0m";
 var FG_RED = "\x1B[31m";
@@ -44,7 +45,7 @@ function requiresTheseProps(object, requiredPropMap) {
 }
 
 // stuff/const_config/src/utils.ts
-var {mkdirSync, readFileSync, writeFileSync} = (() => ({}));
+import { mkdirSync, readFileSync, writeFileSync } from "fs";
 var GLOBAL = {
   mapping: [],
   definedMapping: new Map,
