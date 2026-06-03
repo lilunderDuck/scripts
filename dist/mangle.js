@@ -1,6 +1,5 @@
-// @bun
 // stuff/mangle/src/main.ts
-import { writeFileSync } from "fs";
+import { writeFileSync } from "node:fs";
 
 // stuff/logging.ts
 var RESET = "\x1B[0m";
@@ -21,7 +20,7 @@ var context = {
 };
 
 // stuff/mangle/src/utils.ts
-import { readdirSync, readFileSync } from "fs";
+import { readdirSync, readFileSync } from "node:fs";
 function generateCombinations(chars, length, startIndex) {
   if (length === 0)
     return [""];
@@ -97,8 +96,8 @@ function propsEndWithDollarSignPreset() {
   };
 }
 // stuff/json_config.ts
-import { readFileSync as readFileSync2 } from "fs";
-import path from "path";
+import { readFileSync as readFileSync2 } from "node:fs";
+import path from "node:path";
 function mustReadJsonConfig(jsonConfigName) {
   const [_processName, _scriptPath, jsonConfigLocation] = process.argv;
   const cwd = process.cwd();
