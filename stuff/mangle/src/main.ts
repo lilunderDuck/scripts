@@ -1,56 +1,47 @@
-import { writeFileSync } from "node:fs"
-// ...
-import { warnLog } from "../../logging"
-import { context } from "./context"
-import { getAllFiles, sortedMapFromLongestToShortest } from "./utils"
+import type { PluginOption } from "vite"
 import { 
-  propsEndWithDollarSignPreset 
+  PropsWithDollarSign
 } from "./presets"
-import type { PresetHandlerFn } from "./types"
-import { mustReadJsonConfig } from "../../json_config"
+import type { IMangleContext, IManglePreset, MangleConfig } from "./types"
 
-interface IMangleConfig {
-  targetDir: string
-  preset: string[]
-}
+export function jsMesser5000Plugin(config: MangleConfig): PluginOption {
+  const CONTEXT = {
+    mangleMapping: new Map<string, string>()
+  } satisfies IMangleContext
 
-const builtinPreset: Record<string, PresetHandlerFn> = {
-  "propsEndWithDollarSign": propsEndWithDollarSignPreset
-}
+  const PRESET = [
+    ["props-end-with-dollar-sign", new PropsWithDollarSign(CONTEXT)]
+  ] satisfies [string, IManglePreset][]
 
-function mangle(config: IMangleConfig) {
-  getAllFiles(config.targetDir)
-
-  for (const preset of config.preset) {
-    const presetHandler = builtinPreset[preset]
-    if (!presetHandler) {
-      warnLog(`Preset ${preset} not found, ignoring...`)
-      continue
+  const runPresetLifecycleHook = (fileContent: string) => {
+    let workingFileContent = fileContent
+    for (const [presetName, preset] of PRESET) {
+      console.log("Running preset for:", presetName)
+      preset.messWithConfig(config)
+      preset.discover(workingFileContent)
+      workingFileContent = preset.mangle(workingFileContent)
     }
 
-    for (const [fileName, content] of context.fileContentMapping) {
-      console.log("Discovering\t", fileName)
-      presetHandler().discover(content)
-    }
+    return workingFileContent
   }
 
-  context.mangleMapping = sortedMapFromLongestToShortest(context.mangleMapping)
+  return {
+    name: 'vite-plugin-js-messer-5000',
+    apply: "build",
+    transform(code, id) {
+      const SHOULD_MESS = id.includes(config.srcDir) && (
+        id.endsWith('.js') || 
+        id.endsWith('.ts') || 
+        id.endsWith('.jsx') || 
+        id.endsWith('.tsx')
+      )
 
-  for (const preset of config.preset) {
-    const presetHandler = builtinPreset[preset]
-    if (!presetHandler) {
-      warnLog(`Preset ${preset} not found, ignoring...`)
-      continue
-    }
-
-    for (const [fileName, content] of context.fileContentMapping) {
-      console.log("Mangling\t", fileName)
-      const newFileContent = presetHandler().mangle(content)
-      writeFileSync(`${config.targetDir}/${fileName}`, newFileContent)
+      if (SHOULD_MESS) {
+        return {
+          code: runPresetLifecycleHook(code),
+          map: null // Pass null if you don't want to deal with source maps for now
+        }
+      }
     }
   }
-
-  console.log("All of the names are belong to the ducks.")
 }
-
-mangle(mustReadJsonConfig<IMangleConfig>("mangle.json"))

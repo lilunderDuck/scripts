@@ -1,5 +1,4 @@
 import { readdirSync, readFileSync } from "node:fs"
-import { context } from "./context"
 
 function generateCombinations(chars: string, length: number, startIndex: number): string[] {
   if (length === 0) return ['']
@@ -25,25 +24,25 @@ export type FileData = {
   newContent?: string
 }
 
-export function getAllFiles(targetDir: string) {
-  for (const fileName of readdirSync(targetDir)) {
-    if (!(fileName.endsWith(".css") || fileName.endsWith(".js"))) {
-      console.log("Skip: \t", `${targetDir}/${fileName}`)
-      continue
-    }
+// export function getAllFiles(targetDir: string) {
+//   for (const fileName of readdirSync(targetDir)) {
+//     if (!(fileName.endsWith(".css") || fileName.endsWith(".js"))) {
+//       console.log("Skip: \t", `${targetDir}/${fileName}`)
+//       continue
+//     }
 
-    try {
-      const filePathToRead = `${targetDir}/${fileName}`
-      console.log("Read: \t", filePathToRead)
-      context.fileContentMapping.set(
-        fileName, 
-        readFileSync(filePathToRead, { encoding: 'utf-8' })
-      )
-    } catch(error) {
-      console.error(error)
-    }
-  }
-}
+//     try {
+//       const filePathToRead = `${targetDir}/${fileName}`
+//       console.log("Read: \t", filePathToRead)
+//       context.fileContentMapping.set(
+//         fileName, 
+//         readFileSync(filePathToRead, { encoding: 'utf-8' })
+//       )
+//     } catch(error) {
+//       console.error(error)
+//     }
+//   }
+// }
 
 export function sortedMapFromLongestToShortest<T extends Map<string, any>>(map: T): T {
   const sortedArray = Array.from(map).sort((a, b) => {

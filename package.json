@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "fastest-validator": "^1.19.1",
+    "vite": "^8.1.4",
     "vite-plugin-macro": "^0.2.0"
   }
 }

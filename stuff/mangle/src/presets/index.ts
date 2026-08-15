@@ -1,1 +1,1 @@
-export * from "./propsEndWithDollarSign"
+export * from "./PropsWithDollarSign"
