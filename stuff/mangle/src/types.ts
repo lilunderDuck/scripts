@@ -1,3 +1,5 @@
+import type { IInlineConstEnumOptions } from "./core/const-enums";
+
 type DeepPartial<T> = T extends Array<infer U>
   ? Array<DeepPartial<U>>
   : T extends object
@@ -9,16 +11,19 @@ export type MangleConfig = {
   props?: Partial<{
     manualMangle: string[]
   }>
+  constEnum?: Required<IInlineConstEnumOptions>
 }
 
 export interface IManglePreset {
-  messWithConfig(config: MangleConfig): void
-  discover(fileContent: string): void
-  mangle(fileContent: string): string
+  settingUpConfig(config: MangleConfig): void
+  onBuildStart(): void | Promise<void>
+  onDiscover(thisData: IMangleFileData): void
+  onTransform(thisData: IMangleFileData): void
 }
 
-export interface IMangleContext {
-  mangleMapping: Map<string, string>
+export interface IMangleFileData {
+  fileId: string
+  fileContent: string
 }
 
-export type ManglePresetConstructor = new (context: IMangleContext) => IManglePreset
+export type ManglePresetConstructor = new () => IManglePreset

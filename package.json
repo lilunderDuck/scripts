@@ -11,7 +11,11 @@
     "build": "bun run build.ts"
   },
   "dependencies": {
+    "ast-kit": "^3.0.0",
+    "fast-glob": "^3.3.3",
     "fastest-validator": "^1.19.1",
+    "magic-string": "^1.2.0",
+    "tsconfig-paths": "^4.2.0",
     "vite": "^8.1.4",
     "vite-plugin-macro": "^0.2.0"
   }

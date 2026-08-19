@@ -1,34 +1,34 @@
 import type { PluginOption } from "vite"
+// ...
 import { 
+  InlineConstEnum,
   PropsWithDollarSign
 } from "./presets"
-import type { IMangleContext, IManglePreset, MangleConfig } from "./types"
+import type { IManglePreset, MangleConfig } from "./types"
 
 export function jsMesser5000Plugin(config: MangleConfig): PluginOption {
-  const CONTEXT = {
-    mangleMapping: new Map<string, string>()
-  } satisfies IMangleContext
-
-  const PRESET = [
-    ["props-end-with-dollar-sign", new PropsWithDollarSign(CONTEXT)]
+  const ALL_PRESET = [
+    ["props-end-with-dollar-sign", new PropsWithDollarSign()],
+    ["inline-const-enum", new InlineConstEnum()]
   ] satisfies [string, IManglePreset][]
 
-  const runPresetLifecycleHook = (fileContent: string) => {
-    let workingFileContent = fileContent
-    for (const [presetName, preset] of PRESET) {
-      console.log("Running preset for:", presetName)
-      preset.messWithConfig(config)
-      preset.discover(workingFileContent)
-      workingFileContent = preset.mangle(workingFileContent)
+  // function name is a soft-reference to fabric-lifecycle-events-v1 module
+  const dispatchPresetEventLifecycleHook = async <T extends keyof IManglePreset>(name: T, ...args: Parameters<IManglePreset[T]>) => {
+    for (const [presetName, preset] of ALL_PRESET) {
+      // @ts-ignore
+      await preset[name](...args)
     }
-
-    return workingFileContent
   }
+
+  dispatchPresetEventLifecycleHook('settingUpConfig', config)
 
   return {
     name: 'vite-plugin-js-messer-5000',
     apply: "build",
-    transform(code, id) {
+    async buildStart() {
+      await dispatchPresetEventLifecycleHook('onBuildStart')
+    },
+    async transform(code, id) {
       const SHOULD_MESS = id.includes(config.srcDir) && (
         id.endsWith('.js') || 
         id.endsWith('.ts') || 
@@ -37,9 +37,12 @@ export function jsMesser5000Plugin(config: MangleConfig): PluginOption {
       )
 
       if (SHOULD_MESS) {
+        const fileDataRef = { fileId: id, fileContent: code }
+        await dispatchPresetEventLifecycleHook('onDiscover', fileDataRef)
+        await dispatchPresetEventLifecycleHook('onTransform', fileDataRef)
         return {
-          code: runPresetLifecycleHook(code),
-          map: null // Pass null if you don't want to deal with source maps for now
+          code: fileDataRef.fileContent,
+          map: null // don't wanna deal with source maps, for now
         }
       }
     }

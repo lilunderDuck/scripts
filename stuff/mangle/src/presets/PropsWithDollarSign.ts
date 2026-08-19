@@ -1,22 +1,29 @@
 import { randomCharGenerator } from "../utils"
-import type { MangleConfig, IMangleContext, IManglePreset } from "../types"
+import type { MangleConfig, IManglePreset, IMangleFileData } from "../types"
 
 export class PropsWithDollarSign implements IManglePreset {
   readonly RANDOM_GENERATOR = randomCharGenerator(2)
   readonly PROPS_ENDS_WITH_DOLLAR_SIGN = /[a-zA-Z0-9_]+\$/gm
-  constructor(protected context: IMangleContext) {}
+  readonly CONTEXT = {
+    mangleMapping: new Map<string, string>()
+  }
+  constructor() {}
 
-  messWithConfig(config: MangleConfig): void {
+  public settingUpConfig(config: MangleConfig): void {
     if (config.props?.manualMangle?.length == 0) return
 
     for (const propName of config.props!.manualMangle!) {
       const randomValue = this.RANDOM_GENERATOR.next().value!
-      this.context.mangleMapping.set(propName, randomValue)
+      this.CONTEXT.mangleMapping.set(propName, randomValue)
     }
   }
 
-  discover(fileContent: string): void {
-    const result = fileContent.match(this.PROPS_ENDS_WITH_DOLLAR_SIGN)
+  public onBuildStart(): void {
+    // skip
+  }
+
+  public onDiscover(file: IMangleFileData): void {
+    const result = file.fileContent.match(this.PROPS_ENDS_WITH_DOLLAR_SIGN)
     if (!result) {
       console.log("| No prop needs to be mangled, skipping")
       return
@@ -29,9 +36,9 @@ export class PropsWithDollarSign implements IManglePreset {
         continue
       }
 
-      if (!this.context.mangleMapping.has(prop)) {
+      if (!this.CONTEXT.mangleMapping.has(prop)) {
         const randomValue = this.RANDOM_GENERATOR.next().value!
-        this.context.mangleMapping.set(prop, randomValue)
+        this.CONTEXT.mangleMapping.set(prop, randomValue)
         console.log(`| Map: \t\t\t${prop} -> ${randomValue}`)
         continue
       }
@@ -40,12 +47,9 @@ export class PropsWithDollarSign implements IManglePreset {
     }
   }
 
-  mangle(fileContent: string): string {
-    let newFileContent = fileContent
-    for (const [originalProp, mangledProp] of this.context.mangleMapping) {
-      newFileContent = newFileContent.replaceAll(originalProp, mangledProp)
+  public onTransform(file: IMangleFileData) {
+    for (const [originalProp, mangledProp] of this.CONTEXT.mangleMapping) {
+      file.fileContent = file.fileContent.replaceAll(originalProp, mangledProp)
     }
-
-    return newFileContent
   }
 }
