@@ -1,0 +1,9 @@
+{
+  "title": "I contain code from google",
+  "id": "scripts",
+  "description": "A collection of scripts that I used to build my app.",
+  "type": "public",
+  "status": "active",
+  "icon": "cat-flashbang.png",
+  "repoUrl": "https://github.com/lilunderDuck/scripts"
+}
