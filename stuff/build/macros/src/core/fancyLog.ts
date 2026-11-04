@@ -1,10 +1,10 @@
 import { defineMacro, type Macro } from "vite-plugin-macro"
 
-const ERR_INVALID_ARGS = (macroName: string) => `${macroName}() requires at least 1 argument, like this
-1  | ${macroName}("This is a message!")
+const ERR_LOG_INVALID_ARGS = (macroName: string) => `${macroName}() requires at least 1 argument, like this
+1  | ${macroName}("log label")
 
 Since this macro is mirrored *almost the same* as console.log(), you can pass in as many arguments as you like.
-1  | ${macroName}("This is a message!", someVariable, {}, true, ...)
+1  | ${macroName}("log label", someVariable, {}, true, ...)
 
 Notes: do not pass any important logic inside this macro, as it will be removed in production.
 
@@ -19,7 +19,6 @@ Instead, do it like this:
 ` as const
 
 type ConsoleType = "console.log" | "console.warn" | "console.error" | "console.debug"
-
 function debugLogMacroHandler(
   macroName: string,
   description: string,
@@ -40,7 +39,7 @@ function debugLogMacroHandler(
       const [messageArgs] = path.node.arguments
 
       if (!messageArgs) {
-        throw new SyntaxError(ERR_INVALID_ARGS(macroName))
+        throw new SyntaxError(ERR_LOG_INVALID_ARGS(macroName))
       }
 
       path.replaceWith(
@@ -75,3 +74,53 @@ export const errorLog = debugLogMacroHandler(
   "error",
   "#ff5a3d"
 )
+
+const ERR_LOG_LABEL_INVALID_ARGS = <const T extends string>(macroName: T) => `${macroName}() requires at least 1 argument: "label", like this:
+1  | ${macroName}("log label")
+.. |              ^^^^^^^^^^^
+
+Or logging with some stuff:
+1  | ${macroName}("log label", someVariable, {}, true, ...)
+
+Notes: do not pass any important logic inside this macro, as it will be removed in production.
+
+Avoid code that more or less like this:
+1  | ${macroName}("log label", "The status is: ", createSomethingVeryImportant())
+.. | this will be entirely removed   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Instead, do it like this:
+1  | const status = createSomethingVeryImportant()
+2  | ${macroName}("log label", "The status is: ", status)
+.. | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ only removes the debug log
+` as const
+
+function debugLogWithCustomLabelMacroHandler(
+  macroName: string,
+  description: string,
+  console: ConsoleType,
+  labelName: string,
+  labelColor: string,
+): (debugMode: boolean) => Macro {
+  const LOG_LABEL_STYLE = `background-color:${labelColor}; color: black; padding-inline: 5px; border-radius: 6px; font-weight: bold;` as const
+
+  return (debugMode: boolean) => defineMacro(macroName)
+    .withSignature("(label: string, ...something: any[]): void", description)
+    .withHandler(({ path }, { template }) => {
+      if (debugMode) {
+        path.remove()
+        return
+      }
+
+      const [messageArgs] = path.node.arguments
+      if (!messageArgs) {
+        throw new SyntaxError(ERR_LOG_LABEL_INVALID_ARGS(macroName))
+      }
+
+      path.replaceWith(
+        template.statement.ast`
+          ${console}(\`%c${labelName}%c \`, "${LOG_LABEL_STYLE}", "", ${{ type: "ArrayExpression", elements: messageArgs }})
+        `
+      )
+    })
+  // ...
+}
