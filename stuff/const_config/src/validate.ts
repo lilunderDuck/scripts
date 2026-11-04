@@ -1,6 +1,5 @@
 import { panic, panicThenShowFormatedObject } from "../../logging"
 
-
 export function isPlainObject(val: any) {
   return val !== null && typeof val === 'object' && !Array.isArray(val)
 }

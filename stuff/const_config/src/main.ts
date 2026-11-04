@@ -1,6 +1,7 @@
 import { mustNotBeEmptyObject, requiresTheseProps } from "./validate"
 import { warnLog } from "../../logging"
 import { addToMapping, appendContent, readConfigFile, saveTypeDef } from "./utils"
+import type { PluginOption } from "vite"
 
 export type EnumOption = {
   type: "enum"
@@ -108,4 +109,19 @@ function painfullyValidateThese(config: ConstConfigOption) {
 
 if (import.meta.main) {
   generateTypeThenSave()
+}
+
+interface IGlobalConstConfigPlugin {
+  consts?: Record<string, any>
+  /**The type definition stored for all of the constants defined,
+   * @default "./build/dist/types"
+   */
+  generatedTypeLocation?: string
+}
+
+export function globalConstConfigPlugin(options: IGlobalConstConfigPlugin): PluginOption {
+  return {
+    name: "vite-plugin-global-const-config",
+    
+  }
 }
