@@ -9,10 +9,8 @@ import (
 var appAssets embed.FS
 
 func main() {
-	server := core.CreateServer(":8000")
-
 	app := core.NewApp("playlist")
 	app.Init(appAssets, "dist/app", "http://localhost:8000")
 
-	core.StartServer(server)
+	app.Start(":8000")
 }

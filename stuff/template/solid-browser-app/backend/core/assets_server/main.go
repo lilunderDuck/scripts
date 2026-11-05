@@ -1,4 +1,4 @@
-package core
+package assets_server
 
 import (
 	"fmt"
@@ -6,18 +6,20 @@ import (
 	"toast/backend/debug"
 )
 
-type assetsServer struct {
-	dll     *syscall.LazyDLL
-	appName string
+const CONFUSING_ERROR_MESSAGE = "The operation completed successfully."
+
+type Server struct {
+	Dll     *syscall.LazyDLL
+	AppName string
 }
 
-func (this *assetsServer) mustOpen() string {
+func (this *Server) MustOpen() string {
 	if debug.IS_ENABLED {
 		debug.InfoLabelf("assets-server", "opening local server...")
 	}
 
-	openServerProc := this.dll.NewProc("server_open_floodgates")
-	serverAddrRaw, _, err := syscall.SyscallN(openServerProc.Addr(), stringToUintptr(this.appName))
+	openServerProc := this.Dll.NewProc("server_open_floodgates")
+	serverAddrRaw, _, err := syscall.SyscallN(openServerProc.Addr(), stringToUintptr(this.AppName))
 	if debug.IS_ENABLED {
 		if err != 0 && err.Error() != CONFUSING_ERROR_MESSAGE {
 			panic(fmt.Errorf("Failed to execute DLL procedure: %v", err))
@@ -32,13 +34,13 @@ func (this *assetsServer) mustOpen() string {
 	return serverUrlStr
 }
 
-func (this *assetsServer) close() {
+func (this *Server) Close() {
 	if debug.IS_ENABLED {
 		debug.InfoLabelf("assets-server", "closing local server...")
 	}
 
-	closeServerProc := this.dll.NewProc("server_yeet")
-	_, _, err := syscall.SyscallN(closeServerProc.Addr(), stringToUintptr(this.appName))
+	closeServerProc := this.Dll.NewProc("server_yeet")
+	_, _, err := syscall.SyscallN(closeServerProc.Addr(), stringToUintptr(this.AppName))
 	if debug.IS_ENABLED {
 		if err != 0 && err.Error() != CONFUSING_ERROR_MESSAGE {
 			panic(fmt.Errorf("Failed to execute DLL procedure: %v", err))

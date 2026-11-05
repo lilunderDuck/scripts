@@ -1,9 +1,10 @@
-package core
+package front2back
 
 import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"toast/backend/core/flags"
 	"toast/backend/debug"
 
 	"github.com/go-playground/validator/v10"
@@ -85,7 +86,7 @@ func Register(route string, routeHandler http.HandlerFunc) {
 
 	http.Handle(route, http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
 		// make sure I hate CORS in deverlopment mode
-		if IS_DEV_MODE {
+		if flags.IS_DEV_MODE {
 			if debug.IS_ENABLED {
 				debug.InfoLabelf("server", "the duck shall cast their spell to wipe CORS out of %s", debug.FormatPath(req.URL.Path))
 			}

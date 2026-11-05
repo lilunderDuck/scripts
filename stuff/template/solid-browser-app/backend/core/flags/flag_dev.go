@@ -1,5 +1,5 @@
 //go:build TOAST_DEV_MODE
 
-package core
+package flags
 
 const IS_DEV_MODE = true

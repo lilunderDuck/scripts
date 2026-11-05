@@ -51,6 +51,15 @@ type AnyNumber interface {
 		uint | uint8 | uint16 | uint32 | uint64
 }
 
+func FormatKeyWithValue(key string, value string) string {
+	keyFormat := FormatWith(COLOR_GRAY, STYLE_BOLD, key+"=")
+	return keyFormat + value
+}
+
+func FormatNumberToHex[T AnyNumber](number T) string {
+	return FormatWith(COLOR_GREEN, STYLE_NONE, fmt.Sprintf("%#x", number))
+}
+
 func FormatNumber[T AnyNumber](number T) string {
 	return FormatWith(COLOR_GREEN, STYLE_NONE, strconv.Itoa(int(number)))
 }
