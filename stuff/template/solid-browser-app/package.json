@@ -1,0 +1,30 @@
+{
+  "name": "solid-browser-app-template",
+  "version": "0.0.0",
+  "description": "",
+  "type": "module",
+  "scripts": {
+    "start": "vite",
+    "dev": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^26.6.3",
+    "postcss": "^8.4.49",
+    "solid-devtools": "^0.34.3",
+    "tailwindcss": "^4.1.13",
+    "vite": "^7.1.4",
+    "vite-plugin-pages": "0.32.4",
+    "vite-plugin-solid": "^2.11.8"
+  },
+  "dependencies": {
+    "@corvu/tooltip": "^0.2.2",
+    "@solidjs/router": "^0.15.1",
+    "molcss": "^0.2.5",
+    "solid-icons": "1.1.0",
+    "solid-js": "^1.9.5",
+    "solid-marked": "^0.8.0"
+  }
+}
