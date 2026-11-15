@@ -24,21 +24,31 @@ func main() {
 				<h1>Local App Running</h1>
 				<button id="register">Register test</button>
 				<button id="unregister">Unregister test</button>
-				<button id="close">Close server</button>
+				<button id="fileDialog">Open file dialog test</button>
 				<style>
 					body { background-color: #121212; color: #ffffff }
 				</style>
 				<script>
-					document.getElementById("register").addEventListener('click', () => {
+					document.getElementById("register").addEventListener('click', async() => {
 						fetch('/register')
+						console.log("registered")
 					})
 
-					document.getElementById("unregister").addEventListener('click', () => {
+					document.getElementById("unregister").addEventListener('click', async() => {
 						fetch('/unregister')
+						console.log("unregistered")
 					})
 
-					document.getElementById("close").addEventListener('click', () => {
-						fetch('/close')
+					document.getElementById("fileDialog").addEventListener('click', async() => {
+						const response = await fetch("http://localhost:34515/openFileDialog", {
+							method: "POST",
+							body: JSON.stringify({
+								title: "test file dialog!",
+								Filter: []
+							})
+						})
+
+						console.log(await response.text())
 					})
 				</script>
 			</body>
