@@ -59,12 +59,37 @@ func StartServerIfNotStarted() {
 		Handler: mux,
 	}
 
-	go server.ListenAndServe()
+	if DEBUG_ENABLED {
+		go func() {
+			err := server.ListenAndServe()
+			if err != nil {
+				logger.Error(err.Error())
+			}
+		}()
+	} else {
+		go server.ListenAndServe()
+	}
+
 	isServerStarted = true
+	if DEBUG_ENABLED {
+		logger.Info("server opened")
+	}
 }
 
 func HangUpAndExitDramatically() {
-	serverInstance.Shutdown(context.Background())
+	if DEBUG_ENABLED {
+		logger.Info("server is shutting down")
+	}
+
+	if err := serverInstance.Shutdown(context.Background()); err != nil {
+		logger.Error("server forced to shutdown: " + err.Error())
+	}
+
+	_ = serverInstance.Close()
+
+	if DEBUG_ENABLED {
+		logger.Info("server shutdown complete")
+	}
 }
 
 func serveStaticWithFilter(
