@@ -1,8 +1,11 @@
 package main
 
+import "sync"
+
 type Instance struct {
 	instanceMap map[string]byte
 	Count       int
+	mu          sync.Mutex
 }
 
 const ALIVE = 1
@@ -15,6 +18,9 @@ func Instance_new() *Instance {
 }
 
 func (this *Instance) RegisterForEvident(appName string) {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+
 	_, isRegistered := this.instanceMap[appName]
 	if !isRegistered {
 		this.instanceMap[appName] = ALIVE
@@ -23,8 +29,11 @@ func (this *Instance) RegisterForEvident(appName string) {
 }
 
 func (this *Instance) ThrowOut(appName string) {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+
 	_, isRegistered := this.instanceMap[appName]
-	if !isRegistered {
+	if isRegistered {
 		delete(this.instanceMap, appName)
 		this.Count -= 1
 	}

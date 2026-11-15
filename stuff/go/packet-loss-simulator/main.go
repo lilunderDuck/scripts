@@ -11,11 +11,10 @@ func main() { /* empty, to make go compiler happy */ }
 var deferredRegister = Instance_new()
 
 //export server_open_floodgates
-func server_open_floodgates(rawAppName *C.char) *C.char {
+func server_open_floodgates(rawAppName *C.char) {
 	appName := C.GoString(rawAppName)
 	deferredRegister.RegisterForEvident(appName)
-	serverUrl := StartServerIfNotStarted()
-	return C.CString(serverUrl)
+	StartServerIfNotStarted()
 }
 
 //export server_yeet

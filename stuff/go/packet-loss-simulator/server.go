@@ -13,7 +13,6 @@ import (
 const START_PORT = 34515
 
 var isServerStarted = false
-var totalInstance = 0
 var serverInstance http.Server
 
 var allowedToServeMap = map[string]uint8{
@@ -30,9 +29,8 @@ func GetCurrentDir() (currentPath string) {
 	return filepath.Dir(folderPath)
 }
 
-func StartServerIfNotStarted() (localServerUrl string) {
+func StartServerIfNotStarted() {
 	if isServerStarted {
-		localServerUrl = fmt.Sprintf("http://localhost:%d", START_PORT)
 		return
 	}
 
@@ -63,22 +61,10 @@ func StartServerIfNotStarted() (localServerUrl string) {
 
 	go server.ListenAndServe()
 	isServerStarted = true
-	localServerUrl = fmt.Sprintf("http://localhost:%d", START_PORT)
-	return
 }
 
 func HangUpAndExitDramatically() {
 	serverInstance.Shutdown(context.Background())
-}
-
-func serveStatic(serverInstance *http.ServeMux, path string, whatPath string) {
-	// "/{anything...}" -> match anything after "/". The following route will be valid
-	// 	 /any_path
-	// 	 /basically/anything
-	// 	 ...
-	serverInstance.HandleFunc(path+"/{anything...}", func(res http.ResponseWriter, req *http.Request) {
-		serveFile(res, req, filepath.Join(whatPath, req.PathValue("anything")))
-	})
 }
 
 func serveStaticWithFilter(
