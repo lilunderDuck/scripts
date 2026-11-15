@@ -2,23 +2,16 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 const START_PORT = 34515
 
 var isServerStarted = false
 var serverInstance http.Server
-
-var allowedToServeMap = map[string]uint8{
-	"data":  http.StatusAccepted,
-	"cache": http.StatusAccepted,
-}
 
 func GetCurrentDir() (currentPath string) {
 	folderPath, err := os.Executable()
@@ -34,17 +27,15 @@ func StartServerIfNotStarted() {
 		return
 	}
 
-	mux := http.NewServeMux()
+	execDir := GetCurrentDir()
 
-	serveStaticWithFilter(mux, "/local-assets", GetCurrentDir(), func(path string) int {
-		firstFolderName := strings.SplitAfterN(path, "/", 2)[0]
-		firstFolderName = strings.Replace(firstFolderName, "/", "", 1)
-		_, ok := allowedToServeMap[firstFolderName]
-		if !ok {
-			return http.StatusForbidden
-		}
-		return http.StatusAccepted
-	})
+	mux := http.NewServeMux()
+	mux.Handle("/local-assets", http.StripPrefix(
+		"/local-assets/data/",
+		http.FileServer(http.Dir(
+			filepath.Join(execDir, "data"),
+		)),
+	))
 
 	mux.HandleFunc("/preview", func(res http.ResponseWriter, req *http.Request) {
 		requestedFile := req.URL.Query().Get("path")
@@ -59,16 +50,7 @@ func StartServerIfNotStarted() {
 		Handler: mux,
 	}
 
-	if DEBUG_ENABLED {
-		go func() {
-			err := server.ListenAndServe()
-			if err != nil {
-				logger.Error(err.Error())
-			}
-		}()
-	} else {
-		go server.ListenAndServe()
-	}
+	go server.ListenAndServe()
 
 	isServerStarted = true
 	if DEBUG_ENABLED {
@@ -82,32 +64,16 @@ func HangUpAndExitDramatically() {
 	}
 
 	if err := serverInstance.Shutdown(context.Background()); err != nil {
-		logger.Error("server forced to shutdown: " + err.Error())
+		if DEBUG_ENABLED {
+			logger.Error("server forced to shutdown: " + err.Error())
+		}
 	}
 
-	_ = serverInstance.Close()
+	serverInstance.Close()
 
 	if DEBUG_ENABLED {
 		logger.Info("server shutdown complete")
 	}
-}
-
-func serveStaticWithFilter(
-	serverInstance *http.ServeMux,
-	path string,
-	whatPath string,
-	filter func(path string) int,
-) {
-	serverInstance.HandleFunc(path+"/{anything...}", func(res http.ResponseWriter, req *http.Request) {
-		path := req.PathValue("anything")
-		status := filter(path)
-		if status == http.StatusForbidden {
-			responseWithError(res, status, "static", fmt.Errorf("not allowed to serve %s\n, if this is not intentional, check your filter function", path))
-			return
-		}
-
-		serveFile(res, req, filepath.Join(whatPath, path))
-	})
 }
 
 func serveFile(res http.ResponseWriter, req *http.Request, filePath string) {
@@ -115,22 +81,8 @@ func serveFile(res http.ResponseWriter, req *http.Request, filePath string) {
 	http.ServeFile(res, req, filePath)
 }
 
-type JSON map[string]any
-
-func responseWithError(res http.ResponseWriter, status int, errorName string, errorDetail error) {
-	responseInJson(res, status, JSON{
-		"status":  status,
-		"name":    errorName,
-		"details": fmt.Sprintf("%s. %s", errorDetail.Error(), "༼ つ ╹ ╹ ༽つ"),
-	})
-}
-
-func responseInJson(res http.ResponseWriter, status int, jsonData JSON) {
-	if status >= 400 {
-		jsonString, _ := json.Marshal(jsonData)
-		http.Error(res, string(jsonString), status)
-		return
-	}
-	res.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(res).Encode(jsonData)
+func responseWithError(res http.ResponseWriter, status int, errorDetail string) {
+	res.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	res.WriteHeader(status)
+	res.Write([]byte(errorDetail))
 }
